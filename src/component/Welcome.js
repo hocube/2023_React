@@ -4,5 +4,5 @@ const Welcome = () => {
         <h2>Welcome</h2>
     )
 }
-
+//깃 연습
 export default Welcome;
