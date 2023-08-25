@@ -121,6 +121,20 @@ export default function Main02() {
                                 e.preventDefault();
                                 setMode('UPDATE');
                             }}>Update</a></li>
+                            <li><input type="button" value="Delete" onClick={()=>{
+                                // 빈배열 하는 이유: 누른 것(삭제하려고 선택한)을 뺀 나머지만 배열에 넣고 보여주겠다.
+                                // 진짜 삭제가 아니라, 속임수로 안 보여주도록 하겠다는 뜻.
+                                // 즉, 선택한 객체를 뺀 나머지를 담고 보여주기 위해서
+                                const newTops = [];
+                                for (let i = 0; i < top.length; i++) {
+                                    if(top[i].id !== Number(id)) {
+                                        newTops.push(top[i]);
+                                        //newTops는 삭제하겠다고 선택한 놈을 뺀 나머지만 들어감.
+                                    }
+                                }
+                                // 화면에 적용
+                                setTop(newTops);
+                            }} /></li>
                         </>
     }else if(mode === 'CREATE'){
         content = <Create onCreate={(_title, _body)=>{
