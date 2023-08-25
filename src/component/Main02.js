@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-
 function Article(props) {
     return(
         <article>
@@ -60,20 +59,50 @@ function Create(props) {
     </article>
 }
 
+function Update(props) {
+    // props 내용을 변경하기 위해서 useState를 사용하자.
+    const[title, setTitle] = useState(props.title);
+    const[body, setBody] = useState(props.body);
+
+    return <article>
+        <h2>Update</h2>
+        <form onSubmit={(e)=>{
+            e.preventDefault();
+            const title = e.target.title.value; 
+            const body = e.target.body.value;
+            props.onUpdate(title, body);
+        }} >
+            {/* props는 변경할 수 없다. */}
+            {/* <p><input type="text" name="title" value={props.title} /></p>
+            <p><textarea name="body" value={props.body}></textarea></p> */}
+            <p><input type="text" name="title" value={title} onChange={(e)=>{
+                setTitle(e.target.value);
+            }} /></p>
+            <p><textarea name="body" value={body} onChange={(e)=>{
+                setBody(e.target.value);
+            }}></textarea></p>
+            <p><input type="submit" value="Update" /></p>
+        </form>
+    </article>
+}
+
 export default function Main02() {
-    const top = [
+    const [top, setTop] = useState([
         {id:1, title:"HTML", body : "Hypertext Markup Language"},
         {id:2, title:"CSS", body : "Cascading Style Sheets"},
-        {id:3, title:"JS", body : "JavaScript"},
-    ];
+        {id:3, title:"JS", body : "JavaScript"}
+    ])
 
     const [mode, setMode] = useState('WELCOME');
     const [id, setId] = useState(null);
     const [nextId, setNextId] = useState(4);
     let content = null;
+    
+    // 수정, 삭제를 위한 변수 (READ에서만 수정, 삭제가 나오게)
+    let contextControl = null;
 
     if(mode === 'WELCOME'){
-     content = <Article title="Welcome" body="Hello, WEB" />;
+        content = <Article title="Welcome" body="Hello, WEB" />;
     }else if(mode === 'READ'){
        let title, body = null         
        for (let i = 0; i < top.length; i++) {
@@ -84,18 +113,59 @@ export default function Main02() {
           }        
        } 
        content = <Article title={title} body={body} />;
+
+       // mode가 READ일 때만 수정을 나오게 한다.
+       // 하나를 수정하기 위해서는 ID가 필요하다.
+       contextControl = <>
+                            <li><a href={"/update/"+id} onClick={(e)=>{
+                                e.preventDefault();
+                                setMode('UPDATE');
+                            }}>Update</a></li>
+                        </>
     }else if(mode === 'CREATE'){
         content = <Create onCreate={(_title, _body)=>{
+            // input type에서 입력한 값을 받아서 배열 처리
             const newTop = {id:nextId, title:_title, body:_body};
+
+            // useState에서 초기값이 배열이면 무조건 배열 복사 하자
             // top 배열을 복사 해서 newTops를 만든다.
             const newTops = [...top]
             // newTops에 파라미터로 넘어온 값을 배열로 만든 newTop 추가 
             newTops.push(newTop);
-            set
+            setTop(newTops);
             setMode('READ')
             setId(nextId)
             setNextId(nextId+1)
         }} /> 
+    }else if(mode === "UPDATE") {
+        let title, body = null;
+        console.log(top);
+        console.log(id);
+        for (let i = 0; i < top.length; i++) {
+            console.log("top.id: " + top[i].id + "id: " + id);
+            if(top[i].id === Number(id)){
+                title = top[i].title;
+                body = top[i].body;
+            }
+        }
+        content = <Update title={title} body={body} onUpdate={(_title, _body)=>{
+            console.log(_title);
+            console.log(_body);
+            console.log(id);
+            // alert("update 실행하기");
+            // 원래 내용 복사
+         const newTops = [...top];
+         const updateTop = {id:Number(id), title:_title, body:_body};
+            for (let i = 0; i < newTops.length; i++) {
+                if(newTops[i].id === Number(id)){
+                    // 새로운 내용이 기본내용을 덮어쓰기 하자
+                    newTops[i] = updateTop;
+                    break;
+                }
+            }
+            setTop(newTops);
+            setMode("READ");
+        }}></Update>
     }
 
     return(
@@ -118,6 +188,11 @@ export default function Main02() {
                 setMode('CREATE');
             }}>Create</a>
            </p>
+           <p>
+            {/* 수정 삭제 */}
+            {contextControl}
+           </p>
         </div>
+
     );
 }
